@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.forms import modelform_factory, Textarea
 from django.core.exceptions import ObjectDoesNotExist
 from .models import *
+from .forms import TweetForm
 
 def index(request):
     return render(request, "Tweets/index.html")
@@ -10,6 +11,11 @@ def index(request):
 def _handle_profile(request, profile):
     tweets = profile.tweet_set.order_by("-pub_date")[:10]
     return render(request, "Tweets/profile.html", {"profile": profile, "tweets": tweets})
+
+def _go_back(request):
+    if "next" in request.GET:
+        return redirect(request.GET["next"])
+    return redirect("/")
 
 def profile(request, pid):
     prof = get_object_or_404(Profile, pk=pid)
@@ -28,7 +34,7 @@ def myprofile(request):
 
 @login_required
 def profile_settings(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             mock_prof = request.user.profile
         except ObjectDoesNotExist:
@@ -48,4 +54,14 @@ def profile_settings(request):
 
 @login_required
 def tweet(request, text):
-    pass#TODO
+    try:
+        prof = request.user.profile
+    except ObjectDoesNotExist:
+        return redirect("Tweets:profile_settings")
+    if request.method != "POST":
+        return redirect('/')
+    form = TweetForm(request.POST)
+    if form.is_valid():
+        tweet = Tweet(text = form.cleaned_data["text"], poster = prof)
+    else:
+        return redirect('/')
