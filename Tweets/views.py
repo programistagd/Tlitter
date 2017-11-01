@@ -7,9 +7,13 @@ from .models import *
 def index(request):
     return render(request, "Tweets/index.html")
 
+def _handle_profile(request, profile):
+    tweets = profile.tweet_set.order_by("-pub_date")[:10]
+    return render(request, "Tweets/profile.html", {"profile": profile, "tweets": tweets})
+
 def profile(request, pid):
     prof = get_object_or_404(Profile, pk=pid)
-    return render(request, "Tweets/profile.html", {"profile": prof})
+    return _handle_profile(request, prof)
 
 ProfileForm = modelform_factory(Profile, fields=("nickname", "about"), widgets={"about": Textarea()})
 
@@ -19,7 +23,7 @@ def myprofile(request):
         prof = request.user.profile
     except ObjectDoesNotExist:
         return redirect("Tweets:profile_settings")
-    return render(request, "Tweets/profile.html", {"profile": prof})
+    return _handle_profile(request, prof)
 
 
 @login_required
@@ -41,3 +45,7 @@ def profile_settings(request):
             form = ProfileForm()
 
     return render(request, "Tweets/profile_settings.html", {'form': form})
+
+@login_required
+def tweet(request, text):
+    pass#TODO

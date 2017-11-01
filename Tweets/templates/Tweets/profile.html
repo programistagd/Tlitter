@@ -6,5 +6,12 @@
 {% endif %}
 
 <h2>{{ profile.nickname }}</h2>
-{{ profile.about }}
+<p>{{ profile.about }}</p>
+
+Tweets:
+{% for tweet in tweets %}
+  <p>{{ tweet.text }}</p>
+{% empty %}
+  <p>No tweets by this user</p>
+{% endfor %}
 {% endblock %}
