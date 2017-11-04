@@ -22,7 +22,7 @@ from django.contrib.auth.forms import UserCreationForm
 urlpatterns = [
     url(r'^accounts/login/', auth_views.login, name='login'),
     url(r'^accounts/logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
-    url(r'^accounts/register/', CreateView.as_view(template_name='registration/register.html', form_class=UserCreationForm, success_url='profile_settings'), name="register"), #TODO not sure if want to use that
+    url(r'^accounts/register/', CreateView.as_view(template_name='registration/register.html', form_class=UserCreationForm, success_url='/settings'), name="register"),
     url(r'^polls/', include('polls.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^', include('Tweets.urls')),

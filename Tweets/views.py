@@ -1,3 +1,4 @@
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.forms import modelform_factory, Textarea
@@ -66,16 +67,20 @@ def profile_settings(request):
     return render(request, "Tweets/profile_settings.html", {'form': form})
 
 
-@login_required
-def tweet(request, text):
+def post_tweet(request):
+    if request.method != "POST" or not request.user.is_authenticated:
+        return HttpResponseForbidden("error")
+
     try:
+        text = request.POST["text"]
         prof = request.user.profile
-    except ObjectDoesNotExist:
-        return redirect("Tweets:profile_settings")
-    if request.method != "POST":
-        return redirect('/')
-    form = TweetForm(request.POST)
-    if form.is_valid():
-        tweet = Tweet(text = form.cleaned_data["text"], poster = prof)
+    except (ObjectDoesNotExist, KeyError):
+        return HttpResponseForbidden("error")
+
+    if 1 <= len(text) <= 140:
+        tweet = Tweet(text=text, poster=prof)
+        tweet.save()
+        return HttpResponse("OK")
     else:
-        return redirect('/')
+        return HttpResponseForbidden("error")
+

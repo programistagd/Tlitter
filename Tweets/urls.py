@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^profile/<pk>/$', views.profile, name='profile'),
     url(r'^settings/$', views.profile_settings, name='profile_settings'),
     url(r'^me/$', views.myprofile, name='myprofile'),
+    url(r'^tweet/$', views.post_tweet, name='post_tweet'),
 ]

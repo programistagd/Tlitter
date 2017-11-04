@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
+{% load static %}
+
 <head>
-    <!--<link rel="stylesheet" href="style.css" />-->
+    <link rel="stylesheet" href="{% static 'Tweets/style.css' %}" />
     <title>{% block title %}Tlitter{% endblock %}</title>
 </head>
 
@@ -20,8 +23,18 @@
         {% endblock %}
     </div>
 
+    {% if user.is_authenticated %}
+    <p>Post a new Tlit</p>
+    <textarea id="tweet_text" maxlength="140"></textarea>
+    <button id="tweet_submit">Tlit it!</button>
+    <span id="tweet_csrf" style="display:none;">{{ csrf_token }}</span>
+    <div id="tweet_status"></div>
+    {% endif %}
+
     <div id="content">
         {% block content %}{% endblock %}
     </div>
+
+    <script src="{% static 'Tweets/post_tweet.js' %}"></script>
 </body>
 </html>
