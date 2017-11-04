@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% load tweets_tags %}
+
 {% block content %}
-Hello world
+<h2>Hello world</h2>
+
+Latest tweets:
+{% for tweet in latest_tweets %}
+    {% show_tweet tweet %}
+{% endfor %}
+
 {% endblock %}

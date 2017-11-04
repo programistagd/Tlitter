@@ -1,27 +1,40 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.forms import modelform_factory, Textarea
 from django.core.exceptions import ObjectDoesNotExist
+from django.views import generic
+
 from .models import *
 from .forms import TweetForm
 
-def index(request):
-    return render(request, "Tweets/index.html")
+
+class IndexView(generic.ListView):
+    template_name = 'Tweets/index.html'
+    context_object_name = 'latest_tweets'
+
+    def get_queryset(self):
+        """Return the last 10 published tweets."""
+        return Tweet.objects.order_by('-pub_date')[:10]
+
 
 def _handle_profile(request, profile):
     tweets = profile.tweet_set.order_by("-pub_date")[:10]
     return render(request, "Tweets/profile.html", {"profile": profile, "tweets": tweets})
+
 
 def _go_back(request):
     if "next" in request.GET:
         return redirect(request.GET["next"])
     return redirect("/")
 
+
 def profile(request, pid):
     prof = get_object_or_404(Profile, pk=pid)
     return _handle_profile(request, prof)
 
+
 ProfileForm = modelform_factory(Profile, fields=("nickname", "about"), widgets={"about": Textarea()})
+
 
 @login_required
 def myprofile(request):
@@ -51,6 +64,7 @@ def profile_settings(request):
             form = ProfileForm()
 
     return render(request, "Tweets/profile_settings.html", {'form': form})
+
 
 @login_required
 def tweet(request, text):

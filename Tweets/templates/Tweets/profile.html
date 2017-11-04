@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load tweets_tags %}
+
 {% block content %}
 {% if user.is_authenticated and user.profile == profile %}
 <a href="{% url 'Tweets:profile_settings' %}">Edit profile</a>
@@ -10,8 +12,8 @@
 
 Tweets:
 {% for tweet in tweets %}
-  <p>{{ tweet.text }}</p>
+    {% show_tweet tweet %}
 {% empty %}
-  <p>No tweets by this user</p>
+    <p>No tweets by this user</p>
 {% endfor %}
 {% endblock %}
