@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.forms import modelform_factory, Textarea
@@ -6,16 +6,31 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.views import generic
 
 from .models import *
-from .forms import TweetForm
+from .forms import ProfileForm
 
 
-class IndexView(generic.ListView):
+def index(request):
+    if request.user.is_authenticated:
+        return redirect("Tweets:following")
+    return redirect("Tweets:all")
+
+
+class AllView(generic.ListView):
     template_name = 'Tweets/index.html'
     context_object_name = 'latest_tweets'
 
     def get_queryset(self):
         """Return the last 10 published tweets."""
         return Tweet.objects.order_by('-pub_date')[:10]
+
+
+class FollowingView(generic.ListView):
+    template_name = 'Tweets/index.html'
+    context_object_name = 'latest_tweets'
+
+    def get_queryset(self):
+        """Return the last 10 tweets published by people I follow."""
+        return None  #Tweet.objects.order_by('-pub_date')[:10]#TODO
 
 
 def _handle_profile(request, profile):
@@ -29,12 +44,12 @@ def _go_back(request):
     return redirect("/")
 
 
-def profile(request, pid):
-    prof = get_object_or_404(Profile, pk=pid)
-    return _handle_profile(request, prof)
-
-
-ProfileForm = modelform_factory(Profile, fields=("nickname", "about"), widgets={"about": Textarea()})
+def profile(request, name):
+    try:
+        prof = Profile.objects.filter(nickname=name)[0]
+        return _handle_profile(request, prof)
+    except IndexError:
+        return HttpResponseNotFound("No such user")
 
 
 @login_required
@@ -52,15 +67,15 @@ def profile_settings(request):
         try:
             mock_prof = request.user.profile
         except ObjectDoesNotExist:
-            mock_prof = Profile(user = request.user)
-        form = ProfileForm(request.POST, instance = mock_prof)
+            mock_prof = Profile(user=request.user)
+        form = ProfileForm(request.POST, instance=mock_prof)
         # check whether it's valid:
         if form.is_valid():
             prof = form.save()
             return redirect("Tweets:myprofile")
     else:
         try:
-            form = ProfileForm(instance = request.user.profile)
+            form = ProfileForm(instance=request.user.profile)
         except ObjectDoesNotExist:
             form = ProfileForm()
 

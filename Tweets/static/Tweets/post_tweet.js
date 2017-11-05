@@ -11,6 +11,10 @@ function log_tweet(msg) {
     tweet_log.innerHTML = msg;
 }
 
+function refresh_counter() {
+    log_tweet(get_tweet_text().length + "/140");
+}
+
 function initialize_tweeter() {
     tweet_submit.addEventListener("click", function(e) {
         var text = get_tweet_text();
@@ -18,7 +22,7 @@ function initialize_tweeter() {
         formData.append("text", text);
 
         var request = new XMLHttpRequest();
-        request.open('POST', '/tweet/', true); //Warning: This doesn't check for current route
+        request.open('POST', '/tweet/', true); //Warning: This doesn't check for current route in Django
         //request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
         request.setRequestHeader('X-CSRFToken', tweet_csrf.innerHTML);
 
@@ -38,6 +42,11 @@ function initialize_tweeter() {
         request.send(formData);
         log_tweet("Sending...");
     });
+
+    tweet_text.onkeyup = refresh_counter;
+    tweet_text.onchange = refresh_counter;
+
+    refresh_counter();
 }
 
 if (tweet_text != null) {

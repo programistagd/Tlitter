@@ -22,14 +22,15 @@
           {% endif %}
         {% endblock %}
     </div>
-
-    {% if user.is_authenticated %}
-    <p>Post a new Tlit</p>
-    <textarea id="tweet_text" maxlength="140"></textarea>
-    <button id="tweet_submit">Tlit it!</button>
-    <span id="tweet_csrf" style="display:none;">{{ csrf_token }}</span>
-    <div id="tweet_status"></div>
-    {% endif %}
+    {% block post_tweet %}
+        {% if user.is_authenticated %}
+            <p>Post a new Tlit</p>
+            <textarea id="tweet_text" maxlength="140"></textarea>
+            <button id="tweet_submit">Tlit it!</button>
+            <span id="tweet_csrf" style="display:none;">{{ csrf_token }}</span>
+            <div id="tweet_status"></div>
+        {% endif %}
+    {% endblock %}
 
     <div id="content">
         {% block content %}{% endblock %}

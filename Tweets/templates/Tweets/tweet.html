@@ -1,5 +1,5 @@
 <div style="border:1pt solid black;">
-    <p>{{ tweet.poster.nickname }}</p>
+    <p><a href="{% url 'Tweets:profile' name=tweet.poster.nickname %}">{{ tweet.poster.nickname }}</a></p>
     <p>{{ tweet.text }} </p>
     <small>{{ tweet.pub_date }}</small>
 </div>
