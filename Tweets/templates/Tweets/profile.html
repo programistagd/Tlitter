@@ -21,6 +21,20 @@
 {% endif %}
 <p>{{ profile.about }}</p>
 
-<h4>Recent tweets by {{ profile.nickname }}</h4>
+<h4>
+{% if page > 1 %}
+Older
+{% else %}
+Recent
+{% endif %}
+tweets by {{ profile.nickname }}</h4>
+
 {% show_tweets tweets %}
+
+{% if nextPage %}
+   <br>
+   <a class="btn btn-outline-primary" href="{{ request.path }}?page={{ page }}">See older tweets</a>
+
+{% endif %}
+
 {% endblock %}

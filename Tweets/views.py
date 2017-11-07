@@ -13,8 +13,11 @@ def index(request):
     return redirect("Tweets:all")
 
 
+TWEETS_ON_PAGE = 10
+
+
 def index_all(request):
-    tweets = Tweet.objects.order_by('-pub_date')[:10]
+    tweets = Tweet.objects.order_by('-pub_date')[:TWEETS_ON_PAGE]
     ctx = {"latest_tweets": tweets,
            "head_text": "Most recent tweets"}
     return render(request, "Tweets/index.html", ctx)
@@ -27,7 +30,7 @@ def following(request):
     except ObjectDoesNotExist:
         return redirect("Tweets:profile_settings")
     followed_profiles = prof.following.values_list("target", flat=True)
-    tweets = Tweet.objects.filter(poster__in=followed_profiles)
+    tweets = Tweet.objects.filter(poster__in=followed_profiles).order_by("-pub_date")[:TWEETS_ON_PAGE]
     ctx = {"latest_tweets": tweets,
            "head_text": "Tweets by people you follow"}
     return render(request, "Tweets/index.html", ctx)
@@ -40,13 +43,23 @@ def _following_query(follower, target):
 def _handle_profile(request, profile):
     following = None
     try:
-        if request.user.profile != profile:
+        if request.user.is_authenticated and request.user.profile != profile:
             following = _following_query(request.user.profile, profile).count() > 0
     except ObjectDoesNotExist:
         pass
 
-    tweets = profile.tweet_set.order_by("-pub_date")[:10]
-    ctx = {"profile": profile, "tweets": tweets, "following": following}
+    tweet_query = profile.tweet_set.order_by("-pub_date")
+    amnt = tweet_query.count()
+    page = 0
+    if "page" in request.GET:
+        page = int(request.GET["page"])
+
+    tweets = profile.tweet_set.order_by("-pub_date")[TWEETS_ON_PAGE * page:TWEETS_ON_PAGE * page + TWEETS_ON_PAGE]
+    nextPage = False
+    if TWEETS_ON_PAGE * page + TWEETS_ON_PAGE < amnt:
+        nextPage = True
+
+    ctx = {"profile": profile, "tweets": tweets, "following": following, "nextPage": nextPage, "page": page + 1}
     return render(request, "Tweets/profile.html", ctx)
 
 
