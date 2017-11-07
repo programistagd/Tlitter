@@ -24,13 +24,14 @@ class AllView(generic.ListView):
         return Tweet.objects.order_by('-pub_date')[:10]
 
 
-class FollowingView(generic.ListView):
-    template_name = 'Tweets/index.html'
-    context_object_name = 'latest_tweets'
-
-    def get_queryset(self):
-        """Return the last 10 tweets published by people I follow."""
-        return None  #Tweet.objects.order_by('-pub_date')[:10]#TODO
+@login_required
+def following(request):
+    try:
+        prof = request.user.profile
+    except ObjectDoesNotExist:
+        return redirect("Tweets:profile_settings")
+    tweets = Tweet.objects.filter(poster__in=prof.following.values_list("target", flat=True))
+    return render(request, "Tweets/index.html", {"latest_tweets": tweets})
 
 
 def _handle_profile(request, profile):
@@ -98,4 +99,3 @@ def post_tweet(request):
         return HttpResponse("OK")
     else:
         return HttpResponseForbidden("error")
-

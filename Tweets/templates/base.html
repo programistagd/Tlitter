@@ -22,6 +22,18 @@
           {% endif %}
         {% endblock %}
     </div>
+
+    {% block menu %}
+    <div id="menu">
+        <ul>
+            <li><a href="{% url 'Tweets:all' %}">Global frontpage</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'Tweets:following' %}">Friends frontpage</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endblock %}
+
     {% block post_tweet %}
         {% if user.is_authenticated %}
             <p>Post a new Tlit</p>
