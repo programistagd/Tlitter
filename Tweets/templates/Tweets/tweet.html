@@ -1,5 +1,15 @@
-<div style="border:1pt solid black;">
-    <p><a href="{% url 'Tweets:profile' name=tweet.poster.nickname %}">{{ tweet.poster.nickname }}</a></p>
-    <p>{{ tweet.text }} </p>
-    <small>{{ tweet.pub_date }}</small>
+{% load tweets_tags %}
+
+<div class="list-group">
+{% for tweet in tweets %}
+    <div class="list-group-item list-group-item-action flex-column align-items-start">
+       <div class="d-flex w-100 justify-content-between">
+         <h5 class="mb-1"><a href="{% url 'Tweets:profile' name=tweet.poster.nickname %}">{{ tweet.poster.nickname }}</a></h5>
+         <small class="text-muted">{{ tweet.pub_date|smartdate }}</small>
+       </div>
+       <p class="mb-1">{{ tweet.text }}</p>
+   </div>
+{% empty %}
+    <p>No tweets by this user</p>
+{% endfor %}
 </div>

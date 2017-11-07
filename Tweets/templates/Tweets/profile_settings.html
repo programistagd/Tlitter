@@ -8,10 +8,12 @@
 
 {% block content %}
 <h2>Change your profile</h2>
-Your username is {{ user.get_username }} <br>
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Save" />
+    <div class="form-group">
+      Your login is: {{ user.get_username }} <br>
+      {{ form.as_p }}
+    </div>
+    <input class="btn btn-primary" type="submit" value="Save" />
 </form>
 {% endblock %}

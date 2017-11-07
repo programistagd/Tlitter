@@ -14,5 +14,6 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ["nickname", "about"]
         widgets = {
-            "about": forms.Textarea(),
+            "nickname": forms.TextInput(attrs={"class": "form-control"}),
+            "about": forms.Textarea(attrs={"class": "form-control"}),
         }

@@ -1,11 +1,9 @@
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.forms import modelform_factory, Textarea
 from django.core.exceptions import ObjectDoesNotExist
-from django.views import generic
 
-from .models import *
+from .models import Tweet, Profile
 from .forms import ProfileForm
 
 
@@ -15,13 +13,11 @@ def index(request):
     return redirect("Tweets:all")
 
 
-class AllView(generic.ListView):
-    template_name = 'Tweets/index.html'
-    context_object_name = 'latest_tweets'
-
-    def get_queryset(self):
-        """Return the last 10 published tweets."""
-        return Tweet.objects.order_by('-pub_date')[:10]
+def index_all(request):
+    tweets = Tweet.objects.order_by('-pub_date')[:10]
+    ctx = {"latest_tweets": tweets,
+           "head_text": "Most recent tweets"}
+    return render(request, "Tweets/index.html", ctx)
 
 
 @login_required
@@ -30,13 +26,17 @@ def following(request):
         prof = request.user.profile
     except ObjectDoesNotExist:
         return redirect("Tweets:profile_settings")
-    tweets = Tweet.objects.filter(poster__in=prof.following.values_list("target", flat=True))
-    return render(request, "Tweets/index.html", {"latest_tweets": tweets})
+    followed_profiles = prof.following.values_list("target", flat=True)
+    tweets = Tweet.objects.filter(poster__in=followed_profiles)
+    ctx = {"latest_tweets": tweets,
+           "head_text": "Tweets by people you follow"}
+    return render(request, "Tweets/index.html", ctx)
 
 
 def _handle_profile(request, profile):
     tweets = profile.tweet_set.order_by("-pub_date")[:10]
-    return render(request, "Tweets/profile.html", {"profile": profile, "tweets": tweets})
+    ctx = {"profile": profile, "tweets": tweets}
+    return render(request, "Tweets/profile.html", ctx)
 
 
 def _go_back(request):
@@ -50,7 +50,8 @@ def profile(request, name):
         prof = Profile.objects.filter(nickname=name)[0]
         return _handle_profile(request, prof)
     except IndexError:
-        return render(request, "Tweets/not_found.html", {"text": "User not found"}, status=404)
+        return render(request, "Tweets/not_found.html",
+                      {"text": "User not found"}, status=404)
 
 
 @login_required
@@ -72,7 +73,7 @@ def profile_settings(request):
         form = ProfileForm(request.POST, instance=mock_prof)
         # check whether it's valid:
         if form.is_valid():
-            prof = form.save()
+            form.save()
             return redirect("Tweets:myprofile")
     else:
         try:

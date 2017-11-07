@@ -3,11 +3,8 @@
 {% load tweets_tags %}
 
 {% block content %}
-<h2>Hello world</h2>
+<h2>{{ head_text }}</h2>
 
-Latest tweets:
-{% for tweet in latest_tweets %}
-    {% show_tweet tweet %}
-{% endfor %}
+{% show_tweets latest_tweets %}
 
 {% endblock %}

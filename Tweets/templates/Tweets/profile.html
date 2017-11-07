@@ -10,10 +10,6 @@
 <h2>{{ profile.nickname }}</h2>
 <p>{{ profile.about }}</p>
 
-Tweets:
-{% for tweet in tweets %}
-    {% show_tweet tweet %}
-{% empty %}
-    <p>No tweets by this user</p>
-{% endfor %}
+<h4>Recent tweets by {{ profile.nickname }}</h4>
+{% show_tweets tweets %}
 {% endblock %}
