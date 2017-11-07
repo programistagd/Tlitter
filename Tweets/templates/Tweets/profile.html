@@ -8,6 +8,17 @@
 {% endif %}
 
 <h2>{{ profile.nickname }}</h2>
+{% if following == True %}
+   <form action="{% url 'Tweets:unfollow' name=profile.nickname %}" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-following"><span>Following</span></button>
+   </form>
+{% elif following == False %}
+   <form action="{% url 'Tweets:follow' name=profile.nickname %}" method="POST">
+      {% csrf_token %}
+      <input type="submit" value="Follow" class="btn btn-primary" />
+   </form>
+{% endif %}
 <p>{{ profile.about }}</p>
 
 <h4>Recent tweets by {{ profile.nickname }}</h4>

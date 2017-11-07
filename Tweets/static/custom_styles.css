@@ -5,3 +5,18 @@ a.edit_profile {
 .additional-margin {
    margin-top: 20pt;
 }
+
+.btn-following {
+  color: #fff;
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-following:hover {
+  color: #fff;
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-following:hover span {display:none}
+.btn-following:hover:before {content:"Unfollow"}

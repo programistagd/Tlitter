@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import Tweet, Profile
+from .models import Tweet, Profile, Following
 from .forms import ProfileForm
 
 
@@ -33,9 +33,20 @@ def following(request):
     return render(request, "Tweets/index.html", ctx)
 
 
+def _following_query(follower, target):
+    return Following.objects.filter(follower=follower, target=target)
+
+
 def _handle_profile(request, profile):
+    following = None
+    try:
+        if request.user.profile != profile:
+            following = _following_query(request.user.profile, profile).count() > 0
+    except ObjectDoesNotExist:
+        pass
+
     tweets = profile.tweet_set.order_by("-pub_date")[:10]
-    ctx = {"profile": profile, "tweets": tweets}
+    ctx = {"profile": profile, "tweets": tweets, "following": following}
     return render(request, "Tweets/profile.html", ctx)
 
 
@@ -100,3 +111,35 @@ def post_tweet(request):
         return HttpResponse("OK")
     else:
         return HttpResponseForbidden("error")
+
+
+def profile_operation(operation):
+    @login_required
+    def view(request, name):
+        if request.method != "POST":
+            return HttpResponseForbidden("Wrong method")
+        try:
+            target = Profile.objects.filter(nickname=name)[0]
+            follower = request.user.profile
+            operation(follower, target)
+            return redirect("Tweets:profile", name)
+        except IndexError:
+            return render(request, "Tweets/not_found.html",
+                          {"text": "User not found"}, status=404)
+        except ObjectDoesNotExist:
+            return redirect("Tweets:profile_settings")
+    return view
+
+
+@profile_operation
+def follow(follower, target):
+    if _following_query(follower, target).count() > 0:
+        return #already following
+
+    relation = Following(follower=follower, target=target)
+    relation.save()
+
+
+@profile_operation
+def unfollow(follower, target):
+    _following_query(follower, target).delete()
