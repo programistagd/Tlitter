@@ -50,7 +50,7 @@ def profile(request, name):
         prof = Profile.objects.filter(nickname=name)[0]
         return _handle_profile(request, prof)
     except IndexError:
-        return HttpResponseNotFound("No such user")
+        return render(request, "Tweets/not_found.html", {"text": "User not found"}, status=404)
 
 
 @login_required

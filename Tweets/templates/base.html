@@ -4,50 +4,75 @@
 {% load static %}
 
 <head>
-    <link rel="stylesheet" href="{% static 'Tweets/style.css' %}" />
-    <title>{% block title %}Tlitter{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="{% static 'bootstrap4/bootstrap.min.css' %}" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" />
+  <title>{% block title %}Tlitter{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'custom_styles.css' %}" />
 </head>
 
 <body>
-    <div id="header">
-        {% block header %}
-        <h1><a href="{% url 'Tweets:index' %}">Tlitter</a></h1>
-        {% endblock %}
-        {% block userbar %}
-          {% if user.is_authenticated %}
-            Logged in as <a href="{% url 'Tweets:myprofile' %}">{{ user.profile.nickname|default:"???" }}</a>
-            <a href="{% url 'logout' %}">Logout</a>
-          {% else %}
-            <a href="{% url 'login' %}">Log-in</a>
-          {% endif %}
-        {% endblock %}
-    </div>
-
-    {% block menu %}
-    <div id="menu">
-        <ul>
-            <li><a href="{% url 'Tweets:all' %}">Global frontpage</a></li>
+   <nav class="navbar navbar-expand navbar-dark bg-dark">
+     <a class="navbar-brand" href="#">Tlitter</a>
+     <!--<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+       <span class="navbar-toggler-icon"></span>
+    </button>-->
+     <div class="collapse navbar-collapse" id="navbar">
+       <ul class="navbar-nav mr-auto">
+         {% block menu %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'Tweets:all' %}">Global frontpage</a>
+            </li>
             {% if user.is_authenticated %}
-            <li><a href="{% url 'Tweets:following' %}">Friends frontpage</a></li>
+               <li class="nav-item">
+                 <a class="nav-link" href="{% url 'Tweets:following' %}">Friends frontpage</a>
+               </li>
             {% endif %}
-        </ul>
-    </div>
-    {% endblock %}
+         {% endblock %}
+       </ul>
+       <div>
+          {% block userbar %}
+               {% if user.is_authenticated %}
+               <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <span class="navbar-text">Logged in as</span>
+                    <a class="edit_profile" href="{% url 'Tweets:profile_settings' %}">{{ user.profile.nickname|default:'Edit profile' }}</a>
+                  </li>
+                  <li class="nav-item">&nbsp;</li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                  </li>
+               </ul>
+               {% else %}
+               <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Log-in</a>
+                  </li>
+               </ul>
+               {% endif %}
+          {% endblock %}
+       </div>
+     </div>
+   </nav>
 
-    {% block post_tweet %}
-        {% if user.is_authenticated %}
-            <p>Post a new Tlit</p>
-            <textarea id="tweet_text" maxlength="140"></textarea>
-            <button id="tweet_submit">Tlit it!</button>
-            <span id="tweet_csrf" style="display:none;">{{ csrf_token }}</span>
-            <div id="tweet_status"></div>
-        {% endif %}
-    {% endblock %}
+  {% block post_tweet %}
+  {% if user.is_authenticated %}
+  <div class="container additional-margin">
+     <div class="form-group">
+        <p>Post a new Tlit</p>
+        <textarea id="tweet_text" class="form-control" maxlength="140"></textarea>
+        <small id="tweet_status" class="form-text text-muted float-right"></small>
+     </div>
+     <button id="tweet_submit" class="btn btn-primary">Tlit it!</button>
+     <div id="tweet_csrf" style="display:none;">{{ csrf_token }}</div>
+  </div>
+  {% endif %}
+  {% endblock %}
 
-    <div id="content">
-        {% block content %}{% endblock %}
-    </div>
+  <div class="container additional-margin">
+    {% block content %}{% endblock %}
+  </div>
 
-    <script src="{% static 'Tweets/post_tweet.js' %}"></script>
+  <script src="{% static 'Tweets/post_tweet.js' %}"></script>
 </body>
+
 </html>
