@@ -10,10 +10,6 @@
         <div class="card-body">
           <h2 class="card-title">{{ profile.nickname }}</h2>
 
-          {% if user.is_authenticated and user.profile == profile %}
-          <a href="{% url 'Tweets:profile_settings' %}">Edit profile</a>
-          {% endif %}
-
           <p class="card-text">{{ profile.about }}</p>
 
           {% if following == True %}
@@ -26,6 +22,10 @@
                 {% csrf_token %}
                 <input type="submit" value="Follow" class="btn btn-primary" />
              </form>
+          {% endif %}
+
+          {% if user.is_authenticated and user.profile == profile %}
+          <a href="{% url 'Tweets:profile_settings' %}">Edit profile</a>
           {% endif %}
         </div>
       </div>

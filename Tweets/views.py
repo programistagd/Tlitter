@@ -39,37 +39,6 @@ def following(request):
 def _following_query(follower, target):
     return Following.objects.filter(follower=follower, target=target)
 
-
-def _handle_profile(request, profile):
-    following = None
-    try:
-        if request.user.is_authenticated and request.user.profile != profile:
-            following = _following_query(request.user.profile, profile).count() > 0
-    except ObjectDoesNotExist:
-        pass
-
-    # Here I assume that the amount of followers is quite small and display all of them
-    followed_profiles = profile.following.values_list("target__nickname", flat=True)
-    following_profiles = profile.followers.values_list("follower__nickname", flat=True)
-    tweet_query = profile.tweet_set.order_by("-pub_date")
-    pages = int(tweet_query.count() / TWEETS_ON_PAGE) + 1
-    page = 0
-    if "page" in request.GET:
-        page = int(request.GET["page"]) - 1
-
-    tweets = profile.tweet_set.order_by("-pub_date")[TWEETS_ON_PAGE * page:TWEETS_ON_PAGE * page + TWEETS_ON_PAGE]
-
-    ctx = {"profile": profile,
-           "tweets": tweets,
-           "followed_profiles": followed_profiles,
-           "following_profiles": following_profiles,
-           "following": following,
-           "pages": pages,
-           "page": page + 1,
-           "pagesRange": range(1, pages + 1)} # TODO maybe show not all?
-    return render(request, "Tweets/profile.html", ctx)
-
-
 def _go_back(request):
     if "next" in request.GET:
         return redirect(request.GET["next"])
@@ -78,8 +47,34 @@ def _go_back(request):
 
 def profile(request, name):
     try:
-        prof = Profile.objects.filter(nickname=name)[0]
-        return _handle_profile(request, prof)
+        profile = Profile.objects.filter(nickname=name)[0]
+        following = None
+        try:
+            if request.user.is_authenticated and request.user.profile != profile:
+                following = _following_query(request.user.profile, profile).count() > 0
+        except ObjectDoesNotExist:
+            pass
+
+        # Here I assume that the amount of followers is quite small and display all of them
+        followed_profiles = profile.following.values_list("target__nickname", flat=True)
+        following_profiles = profile.followers.values_list("follower__nickname", flat=True)
+        tweet_query = profile.tweet_set.order_by("-pub_date")
+        pages = int(tweet_query.count() / TWEETS_ON_PAGE) + 1
+        page = 0
+        if "page" in request.GET:
+            page = int(request.GET["page"]) - 1
+
+        tweets = profile.tweet_set.order_by("-pub_date")[TWEETS_ON_PAGE * page:TWEETS_ON_PAGE * page + TWEETS_ON_PAGE]
+
+        ctx = {"profile": profile,
+               "tweets": tweets,
+               "followed_profiles": followed_profiles,
+               "following_profiles": following_profiles,
+               "following": following,
+               "pages": pages,
+               "page": page + 1,
+               "pagesRange": range(1, pages + 1)} # TODO maybe show not all?
+        return render(request, "Tweets/profile.html", ctx)
     except IndexError:
         return render(request, "Tweets/not_found.html",
                       {"text": "User not found"}, status=404)
@@ -91,7 +86,7 @@ def myprofile(request):
         prof = request.user.profile
     except ObjectDoesNotExist:
         return redirect("Tweets:profile_settings")
-    return _handle_profile(request, prof)
+    return redirect("Tweets:profile", name=prof.nickname)
 
 
 @login_required
