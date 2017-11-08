@@ -48,18 +48,25 @@ def _handle_profile(request, profile):
     except ObjectDoesNotExist:
         pass
 
+    # Here I assume that the amount of followers is quite small and display all of them
+    followed_profiles = profile.following.values_list("target__nickname", flat=True)
+    following_profiles = profile.followers.values_list("follower__nickname", flat=True)
     tweet_query = profile.tweet_set.order_by("-pub_date")
-    amnt = tweet_query.count()
+    pages = int(tweet_query.count() / TWEETS_ON_PAGE) + 1
     page = 0
     if "page" in request.GET:
-        page = int(request.GET["page"])
+        page = int(request.GET["page"]) - 1
 
     tweets = profile.tweet_set.order_by("-pub_date")[TWEETS_ON_PAGE * page:TWEETS_ON_PAGE * page + TWEETS_ON_PAGE]
-    nextPage = False
-    if TWEETS_ON_PAGE * page + TWEETS_ON_PAGE < amnt:
-        nextPage = True
 
-    ctx = {"profile": profile, "tweets": tweets, "following": following, "nextPage": nextPage, "page": page + 1}
+    ctx = {"profile": profile,
+           "tweets": tweets,
+           "followed_profiles": followed_profiles,
+           "following_profiles": following_profiles,
+           "following": following,
+           "pages": pages,
+           "page": page + 1,
+           "pagesRange": range(1, pages + 1)} # TODO maybe show not all?
     return render(request, "Tweets/profile.html", ctx)
 
 
